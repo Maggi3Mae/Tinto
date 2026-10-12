@@ -3,6 +3,7 @@
 // https://github.com/Maggi3Mae/tinto · MIT License
 
 import AppKit
+import ApplicationServices
 import IOKit.pwr_mgt
 import IOKit.ps
 import ServiceManagement
@@ -161,6 +162,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private var isActive = false
     private var endDate: Date?
     private var setupDeclined = false
+    private var activityID: IOPMAssertionID = 0
+    private var warnedAccessibility = false
+
+    /// Segundos sin teclado ni mouse antes de simular actividad.
+    private let idleBeforeNudge: Double = 50
 
     private lazy var activeIcon = BeanArt.menuBarImage(active: true)
     private lazy var idleIcon = BeanArt.menuBarImage(active: false)
@@ -182,6 +188,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         get { defaults.integer(forKey: "batteryThreshold") }
         set { defaults.set(newValue, forKey: "batteryThreshold") }
     }
+    private var simulateActivity: Bool {
+        get { defaults.bool(forKey: "simulateActivity") }
+        set { defaults.set(newValue, forKey: "simulateActivity") }
+    }
 
     // MARK: Ciclo de vida
 
@@ -191,6 +201,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             "keepDisplayOn": true,
             "showTime": true,
             "batteryThreshold": 10,
+            "simulateActivity": false,
         ])
 
         // Por si una sesión anterior terminó de forma inesperada.
@@ -224,6 +235,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         applyAssertion()
         if closedLid && !lidApplied { lidApplied = enableLidMode() }
         refreshUI()
+        // Tras una actualización macOS olvida el permiso de Accesibilidad: avisar una vez.
+        if simulateActivity && !AXIsProcessTrusted() && !warnedAccessibility {
+            warnedAccessibility = true
+            askForAccessibility()
+        }
     }
 
     private func deactivate() {
@@ -249,7 +265,52 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             deactivate()
             return
         }
+        if simulateActivity, tickCount % 10 == 0 { nudgeIfIdle() }
         refreshUI()
+    }
+
+    // MARK: Simular actividad
+
+    private func nudgeIfIdle() {
+        let anyInput = CGEventType(rawValue: UInt32.max)!
+        let idle = CGEventSource.secondsSinceLastEventType(.combinedSessionState, eventType: anyInput)
+        guard idle >= idleBeforeNudge else { return }
+
+        // 1. Forma oficial: avisar a macOS que hay alguien usando el equipo.
+        IOPMAssertionDeclareUserActivity("Tinto" as CFString, kIOPMUserActiveLocal, &activityID)
+
+        // 2. Mover el cursor 1 px y devolverlo (requiere permiso de Accesibilidad).
+        guard AXIsProcessTrusted(),
+              let source = CGEventSource(stateID: .hidSystemState),
+              let position = CGEvent(source: nil)?.location else { return }
+        let nudged = CGPoint(x: position.x + 1, y: position.y)
+        for point in [nudged, position] {
+            CGEvent(mouseEventSource: source, mouseType: .mouseMoved,
+                    mouseCursorPosition: point, mouseButton: .left)?.post(tap: .cghidEventTap)
+        }
+    }
+
+    private func askForAccessibility() {
+        NSApp.activate()
+        let alert = NSAlert()
+        alert.messageText = L.t("Tinto necesita permiso de Accesibilidad",
+                                "Tinto needs Accessibility permission")
+        alert.informativeText = L.t(
+            "Para simular actividad, Tinto mueve el cursor 1 píxel cuando no estás usando el Mac. "
+            + "Activa Tinto en Ajustes → Privacidad y seguridad → Accesibilidad.\n\n"
+            + "Después de cada actualización de Tinto tendrás que activarlo otra vez.",
+            "To simulate activity, Tinto moves the cursor by 1 pixel while you're away. "
+            + "Turn on Tinto in System Settings → Privacy & Security → Accessibility.\n\n"
+            + "You'll need to turn it on again after each Tinto update.")
+        alert.addButton(withTitle: L.t("Abrir Ajustes", "Open Settings"))
+        alert.addButton(withTitle: L.t("Ahora no", "Not now"))
+        guard alert.runModal() == .alertFirstButtonReturn else { return }
+
+        // Agrega Tinto a la lista de Accesibilidad y abre esa sección de Ajustes.
+        _ = AXIsProcessTrustedWithOptions(["AXTrustedCheckOptionPrompt": true] as CFDictionary)
+        if let url = URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility") {
+            NSWorkspace.shared.open(url)
+        }
     }
 
     // MARK: Energía
@@ -413,6 +474,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
                           #selector(toggleKeepDisplay), checked: keepDisplayOn))
         menu.addItem(item(L.t("Mostrar tiempo restante", "Show time remaining"),
                           #selector(toggleShowTime), checked: showTime))
+        let missingPermission = simulateActivity && !AXIsProcessTrusted()
+        menu.addItem(item(L.t("Simular actividad", "Simulate activity")
+                          + (missingPermission ? L.t(" (falta permiso)", " (permission needed)") : ""),
+                          #selector(toggleSimulateActivity), checked: simulateActivity))
 
         let batteryMenu = NSMenu()
         batteryMenu.autoenablesItems = false
@@ -530,6 +595,15 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         refreshUI()
     }
 
+    @objc private func toggleSimulateActivity() {
+        if simulateActivity {
+            simulateActivity = false
+        } else {
+            simulateActivity = true
+            if !AXIsProcessTrusted() { askForAccessibility() }
+        }
+    }
+
     @objc private func setBattery(_ sender: NSMenuItem) {
         batteryThreshold = sender.representedObject as? Int ?? 0
     }
@@ -574,6 +648,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         try? SMAppService.mainApp.unregister()
         if let bundleID = Bundle.main.bundleIdentifier {
             defaults.removePersistentDomain(forName: bundleID)
+            // Quitar Tinto de la lista de Accesibilidad.
+            let reset = Process()
+            reset.executableURL = URL(fileURLWithPath: "/usr/bin/tccutil")
+            reset.arguments = ["reset", "Accessibility", bundleID]
+            try? reset.run()
+            reset.waitUntilExit()
         }
         try? FileManager.default.trashItem(at: Bundle.main.bundleURL, resultingItemURL: nil)
         NSApp.terminate(nil)

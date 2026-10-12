@@ -15,5 +15,6 @@ sudo rm -f /etc/sudoers.d/tinto
 
 rm -rf "$DEST"
 defaults delete io.github.maggi3mae.tinto 2>/dev/null || true
+tccutil reset Accessibility io.github.maggi3mae.tinto 2>/dev/null || true
 
 echo "✅ Tinto removed, normal sleep restored. / Tinto eliminado, reposo normal restaurado."

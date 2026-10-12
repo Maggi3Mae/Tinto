@@ -25,6 +25,7 @@ En Colombia, un *tinto* es un café negro pequeño, el que te mantiene despierto
 - **Modo tapa cerrada**: cierra tu MacBook y sigue trabajando en una pantalla externa, **sin cargador, teclado ni mouse externos**.
 - **Sesiones estables**: si el cable de la pantalla se desconecta un momento, Tinto sigue activo. No hay que abrir nada ni reacomodar.
 - **Seguro de batería** (opcional): termina la sesión si la batería baja del nivel que elijas.
+- **Simular actividad** (opcional): mantiene tu estado como *Disponible* en apps como Teams o Slack mientras no estás.
 - Tiempo restante junto al ícono, apertura al iniciar sesión, español e inglés.
 - Sin cuenta, sin App Store, sin rastreo.
 
@@ -60,6 +61,14 @@ macOS solo deja al Mac despierto con la tapa cerrada si está cargando. Tinto qu
 La primera vez que lo uses, Tinto te pedirá la contraseña **una sola vez** para crear una regla que le permite ejecutar exactamente dos comandos, `pmset -a disablesleep 1` y `pmset -a disablesleep 0`, y nada más. El reposo normal vuelve en cuanto termina la sesión o cierras Tinto.
 
 > **Ojo:** con el modo tapa cerrada activo, el Mac no se duerme ni dentro de una maleta. Desactiva Tinto antes de guardarlo para que no se caliente.
+
+### Sobre simular actividad
+
+Algunas apps (Teams, Slack…) te marcan como *Ausente* tras unos minutos sin teclado ni mouse, aunque el Mac esté despierto. Con **Simular actividad** activo, Tinto revisa cada pocos segundos y, solo cuando llevas cerca de un minuto inactiva o inactivo, le avisa a macOS que hay alguien usando el Mac y mueve el cursor 1 píxel y lo devuelve. Nunca mueve el cursor mientras trabajas.
+
+Mover el cursor requiere permiso de **Accesibilidad** (Ajustes del Sistema → Privacidad y seguridad → Accesibilidad). Tinto te abre esa pantalla.
+
+> **Nota:** como Tinto no está firmado con un certificado pago de Apple, macOS olvida este permiso tras cada actualización. Tinto te lo recordará; solo tienes que activarlo otra vez.
 
 ## Desinstalar
 

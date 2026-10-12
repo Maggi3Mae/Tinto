@@ -25,6 +25,7 @@
 - **Closed-lid mode**: close your MacBook and keep working on an external display — **no charger, keyboard or mouse required**.
 - **Steady sessions**: if your display cable disconnects for a moment, Tinto keeps going. Nothing to reopen or rearrange.
 - **Battery safeguard** (optional): ends the session when the battery drops below a level you choose.
+- **Simulate activity** (optional): keeps chat apps like Teams or Slack showing you as *Available* while you're away.
 - Time remaining next to the icon, open at login, English and Spanish.
 - No account, no App Store, no tracking.
 
@@ -60,6 +61,14 @@ macOS only lets a Mac stay awake with the lid closed while it's charging. Tinto 
 The first time you use it, Tinto asks for your password **once** to create a rule that lets it run exactly two commands — `pmset -a disablesleep 1` and `pmset -a disablesleep 0` — and nothing else. Normal sleep comes back as soon as the session ends or you quit Tinto.
 
 > **Heads up:** while closed-lid mode is on, your Mac won't sleep even inside a bag. Turn Tinto off before packing it to avoid overheating.
+
+### About simulate activity
+
+Some apps (Teams, Slack…) mark you as *Away* after a few minutes without keyboard or mouse input, even if your Mac is awake. With **Simulate activity** on, Tinto checks every few seconds and, only when you've been idle for about a minute, tells macOS someone is using the Mac and moves the cursor by 1 pixel and back. It never moves the cursor while you're working.
+
+Moving the cursor requires **Accessibility** permission (System Settings → Privacy & Security → Accessibility). Tinto opens that screen for you.
+
+> **Note:** because Tinto isn't signed with a paid Apple Developer certificate, macOS forgets this permission after every update. Tinto will remind you; just turn it on again.
 
 ## Uninstall
 
