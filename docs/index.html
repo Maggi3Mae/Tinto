@@ -3,18 +3,47 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Tinto · Tu Mac despierto, incluso con la tapa cerrada</title>
-<meta name="description" content="App gratuita y de código abierto para la barra de menú de macOS. Mantiene tu Mac despierto, incluso con la tapa cerrada, y tu estado en Disponible.">
+<title>Tinto: tu Mac despierto con la tapa cerrada y Teams disponible</title>
+<meta name="description" content="App gratis para macOS que evita que tu Mac se duerma, incluso con la tapa cerrada, y que Teams y Slack te pongan como Ausente. Alternativa a Amphetamine.">
 <meta name="color-scheme" content="light dark">
+<meta name="google-site-verification" content="oLKCZXaOEB6o7oKUZifwzwiN0mGulUhTU-DrrkPmsCk">
+<link rel="canonical" href="https://maggi3mae.github.io/tinto/">
+<link rel="alternate" hreflang="es" href="https://maggi3mae.github.io/tinto/">
+<link rel="alternate" hreflang="en" href="https://maggi3mae.github.io/tinto/en/">
+<link rel="alternate" hreflang="x-default" href="https://maggi3mae.github.io/tinto/en/">
 <link rel="icon" href="icon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="img/og.png">
 
 <meta property="og:type" content="website">
-<meta property="og:title" content="Tinto: tu Mac despierto, incluso con la tapa cerrada">
-<meta property="og:description" content="App gratuita para la barra de menú de macOS. Sin cuenta, sin App Store.">
+<meta property="og:site_name" content="Tinto">
+<meta property="og:locale" content="es_CO">
+<meta property="og:locale:alternate" content="en_US">
+<meta property="og:title" content="Tinto: tu Mac despierto con la tapa cerrada y Teams disponible">
+<meta property="og:description" content="App gratis para la barra de menú de macOS. Sin cuenta y sin App Store.">
 <meta property="og:image" content="https://maggi3mae.github.io/tinto/img/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
 <meta property="og:url" content="https://maggi3mae.github.io/tinto/">
 <meta name="twitter:card" content="summary_large_image">
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  "name": "Tinto",
+  "url": "https://maggi3mae.github.io/tinto/",
+  "description": "App gratis para la barra de menú de macOS que mantiene el Mac despierto, incluso con la tapa cerrada, y evita que Teams y Slack muestren el estado Ausente.",
+  "inLanguage": "es",
+  "operatingSystem": "macOS 14 o posterior",
+  "applicationCategory": "UtilitiesApplication",
+  "downloadUrl": "https://github.com/Maggi3Mae/tinto/releases/latest",
+  "image": "https://maggi3mae.github.io/tinto/img/og.png",
+  "license": "https://opensource.org/licenses/MIT",
+  "isAccessibleForFree": true,
+  "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+  "author": { "@type": "Person", "name": "Maggi3Mae", "url": "https://github.com/Maggi3Mae" }
+}
+</script>
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -372,7 +401,7 @@ footer .made { width: 100%; color: var(--ink-soft); font-size: .95rem; }
       <svg class="bean" viewBox="-9 -9 18 18" aria-hidden="true"><g stroke-width="1.3"><ellipse class="shell" rx="5" ry="7.5" transform="rotate(35)"/><path class="crease" d="M0.7 6.3 C -2.6 2.2, 2.6 -2.2, -0.7 -6.3" transform="rotate(35)"/></g></svg>
       <span class="pulse"></span>
     </button>
-    <button class="lang" type="button" data-lang-toggle aria-label="English">EN</button>
+    <a class="lang" href="en/" hreflang="en" lang="en" aria-label="English">EN</a>
     <span class="clock" data-clock></span>
   </div>
 </header>
@@ -383,7 +412,7 @@ footer .made { width: 100%; color: var(--ink-soft); font-size: .95rem; }
     <div class="wrap">
       <div>
         <h1 data-i18n="hero.title">Tu Mac despierto, incluso con la tapa cerrada.</h1>
-        <p class="lede" data-i18n="hero.lede">Una app gratuita para la barra de menú de macOS. Un clic en el grano de café y tu Mac no se duerme: ni cuando lo dejas quieto ni cuando cierras la tapa.</p>
+        <p class="lede" data-i18n="hero.lede">Una app gratuita para la barra de menú de macOS. Un clic en el grano de café y tu Mac no se duerme: ni cuando lo dejas quieto ni cuando cierras la tapa. Y tu estado en Teams sigue en Disponible.</p>
         <div class="cta">
           <a class="btn" href="https://github.com/Maggi3Mae/tinto/releases/latest" data-download>
             <svg viewBox="0 0 20 20" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 3v10M5.5 8.5 10 13l4.5-4.5M4 17h12"/></svg>
@@ -539,6 +568,10 @@ footer .made { width: 100%; color: var(--ink-soft); font-size: .95rem; }
           <p data-i18n="a1">Solo para el modo tapa cerrada, y una sola vez. macOS no deja que el Mac siga despierto con la tapa cerrada si no está cargando. Tinto crea una regla que le permite activar y desactivar exactamente ese ajuste del sistema, y nada más.</p>
         </details>
         <details>
+          <summary data-i18n="q9">¿Es una alternativa a Amphetamine o Caffeine?</summary>
+          <p data-i18n="a9">Sí. Mantiene tu Mac despierto con temporizadores, como ellas, y además trae modo tapa cerrada sin cargador y Simular actividad para Teams y Slack. Es gratis, de código abierto y se instala sin cuenta de Apple.</p>
+        </details>
+        <details>
           <summary data-i18n="q2">¿Es seguro?</summary>
           <p data-i18n="a2">Tinto es de código abierto: cualquiera puede leer lo que hace en GitHub. No recopila datos ni se conecta a internet, y el reposo normal vuelve en cuanto terminas la sesión o cierras la app.</p>
         </details>
@@ -551,8 +584,8 @@ footer .made { width: 100%; color: var(--ink-soft); font-size: .95rem; }
           <p data-i18n="a4">Nada. La sesión no depende de la pantalla externa: si el cable falla un momento, tu Mac sigue despierto y todo sigue donde estaba.</p>
         </details>
         <details>
-          <summary data-i18n="q5">¿Funciona con Teams y Slack?</summary>
-          <p data-i18n="a5">Sí, con Simular actividad. macOS te pedirá permiso de Accesibilidad para mover el cursor. Como Tinto no está firmado con un certificado pago, ese permiso hay que volver a darlo después de cada actualización. Tinto te avisa.</p>
+          <summary data-i18n="q5">¿Evita que Teams me ponga como Ausente?</summary>
+          <p data-i18n="a5">Sí, y también en Slack. Activa Simular actividad. macOS te pedirá permiso de Accesibilidad para mover el cursor. Como Tinto no está firmado con un certificado pago, ese permiso hay que volver a darlo después de cada actualización. Tinto te avisa.</p>
         </details>
         <details>
           <summary data-i18n="q6">¿Se calienta dentro de la maleta?</summary>
@@ -593,11 +626,11 @@ footer .made { width: 100%; color: var(--ink-soft); font-size: .95rem; }
 
   const strings = {
     es: {
-      "title": "Tinto · Tu Mac despierto, incluso con la tapa cerrada",
+      "title": "Tinto: tu Mac despierto con la tapa cerrada y Teams disponible",
       "nav.features": "Funciones", "nav.install": "Instalar", "nav.faq": "Preguntas",
       "bean.label": "Activar o desactivar Tinto",
       "hero.title": "Tu Mac despierto, incluso con la tapa cerrada.",
-      "hero.lede": "Una app gratuita para la barra de menú de macOS. Un clic en el grano de café y tu Mac no se duerme: ni cuando lo dejas quieto ni cuando cierras la tapa.",
+      "hero.lede": "Una app gratuita para la barra de menú de macOS. Un clic en el grano de café y tu Mac no se duerme: ni cuando lo dejas quieto ni cuando cierras la tapa. Y tu estado en Teams sigue en Disponible.",
       "hero.off": "Haz clic en el grano para probarlo.",
       "hero.on": "Despierto. Tu Mac no se dormirá hasta que vuelvas a hacer clic.",
       "cta.download": "Descargar para Mac",
@@ -651,14 +684,16 @@ footer .made { width: 100%; color: var(--ink-soft); font-size: .95rem; }
       "faq.title": "Preguntas frecuentes",
       "q1": "¿Por qué pide mi contraseña?",
       "a1": "Solo para el modo tapa cerrada, y una sola vez. macOS no deja que el Mac siga despierto con la tapa cerrada si no está cargando. Tinto crea una regla que le permite activar y desactivar exactamente ese ajuste del sistema, y nada más.",
+      "q9": "¿Es una alternativa a Amphetamine o Caffeine?",
+      "a9": "Sí. Mantiene tu Mac despierto con temporizadores, como ellas, y además trae modo tapa cerrada sin cargador y Simular actividad para Teams y Slack. Es gratis, de código abierto y se instala sin cuenta de Apple.",
       "q2": "¿Es seguro?",
       "a2": "Tinto es de código abierto: cualquiera puede leer lo que hace en GitHub. No recopila datos ni se conecta a internet, y el reposo normal vuelve en cuanto terminas la sesión o cierras la app.",
       "q3": "¿Por qué no está en la App Store?",
       "a3": "Para que puedas instalarlo sin una cuenta de Apple. Por eso macOS muestra un aviso la primera vez que lo abres.",
       "q4": "¿Qué pasa si se desconecta la pantalla?",
       "a4": "Nada. La sesión no depende de la pantalla externa: si el cable falla un momento, tu Mac sigue despierto y todo sigue donde estaba.",
-      "q5": "¿Funciona con Teams y Slack?",
-      "a5": "Sí, con Simular actividad. macOS te pedirá permiso de Accesibilidad para mover el cursor. Como Tinto no está firmado con un certificado pago, ese permiso hay que volver a darlo después de cada actualización. Tinto te avisa.",
+      "q5": "¿Evita que Teams me ponga como Ausente?",
+      "a5": "Sí, y también en Slack. Activa Simular actividad. macOS te pedirá permiso de Accesibilidad para mover el cursor. Como Tinto no está firmado con un certificado pago, ese permiso hay que volver a darlo después de cada actualización. Tinto te avisa.",
       "q6": "¿Se calienta dentro de la maleta?",
       "a6": "Puede pasar: con el modo tapa cerrada activo, el Mac no se duerme ni guardado. Desactiva Tinto antes de guardarlo. El seguro de batería ayuda si se te olvida.",
       "q7": "¿Cómo lo desinstalo?",
@@ -670,11 +705,11 @@ footer .made { width: 100%; color: var(--ink-soft); font-size: .95rem; }
       "lang.other": "EN", "lang.otherName": "English"
     },
     en: {
-      "title": "Tinto · Keep your Mac awake, even with the lid closed",
+      "title": "Tinto: keep your Mac awake with the lid closed and Teams Available",
       "nav.features": "Features", "nav.install": "Install", "nav.faq": "FAQ",
       "bean.label": "Turn Tinto on or off",
       "hero.title": "Keep your Mac awake, even with the lid closed.",
-      "hero.lede": "A free menu bar app for macOS. One click on the coffee bean and your Mac won't sleep: not when you leave it idle, not when you close the lid.",
+      "hero.lede": "A free menu bar app for macOS. One click on the coffee bean and your Mac won't sleep: not when you leave it idle, not when you close the lid. And Teams keeps showing you as Available.",
       "hero.off": "Click the bean to try it.",
       "hero.on": "Awake. Your Mac won't sleep until you click again.",
       "cta.download": "Download for Mac",
@@ -728,14 +763,16 @@ footer .made { width: 100%; color: var(--ink-soft); font-size: .95rem; }
       "faq.title": "Questions",
       "q1": "Why does it ask for my password?",
       "a1": "Only for closed-lid mode, and only once. macOS won't let a Mac stay awake with the lid closed unless it's charging. Tinto creates a rule that lets it turn exactly that system setting on and off, and nothing else.",
+      "q9": "Is it an alternative to Amphetamine or Caffeine?",
+      "a9": "Yes. Like them, it keeps your Mac awake with timers, and it adds closed-lid mode without a charger and Simulate activity for Teams and Slack. It's free, open source and installs without an Apple account.",
       "q2": "Is it safe?",
       "a2": "Tinto is open source: anyone can read what it does on GitHub. It collects no data and doesn't connect to the internet, and normal sleep returns as soon as you end the session or quit the app.",
       "q3": "Why isn't it on the App Store?",
       "a3": "So you can install it without an Apple account. That's why macOS shows a warning the first time you open it.",
       "q4": "What if the display disconnects?",
       "a4": "Nothing. Your session doesn't depend on the external display: if the cable glitches for a moment, your Mac stays awake and everything stays where it was.",
-      "q5": "Does it work with Teams and Slack?",
-      "a5": "Yes, with Simulate activity. macOS will ask for Accessibility permission so Tinto can move the cursor. Because Tinto isn't signed with a paid certificate, you'll need to grant it again after each update. Tinto reminds you.",
+      "q5": "Will it stop Teams from showing me as Away?",
+      "a5": "Yes, and Slack too. Turn on Simulate activity. macOS will ask for Accessibility permission so Tinto can move the cursor. Because Tinto isn't signed with a paid certificate, you'll need to grant it again after each update. Tinto reminds you.",
       "q6": "Will it overheat in my bag?",
       "a6": "It can: with closed-lid mode on, your Mac won't sleep even when packed away. Turn Tinto off before packing it. The battery safeguard helps if you forget.",
       "q7": "How do I uninstall it?",
@@ -748,13 +785,7 @@ footer .made { width: 100%; color: var(--ink-soft); font-size: .95rem; }
     }
   };
 
-  const store = {
-    get(k) { try { return localStorage.getItem(k); } catch { return null; } },
-    set(k, v) { try { localStorage.setItem(k, v); } catch {} }
-  };
-
-  let lang = store.get("tinto.lang") ||
-    ((navigator.language || "es").toLowerCase().startsWith("es") ? "es" : "en");
+  const lang = document.documentElement.lang === "en" ? "en" : "es";
   let awake = false;
   let version = null;
 
@@ -768,9 +799,6 @@ footer .made { width: 100%; color: var(--ink-soft); font-size: .95rem; }
     $$("[data-i18n-html]").forEach(el => { el.innerHTML = t(el.dataset.i18nHtml); });
     $$("[data-i18n-alt]").forEach(el => { el.alt = t(el.dataset.i18nAlt); });
     $$("[data-i18n-label]").forEach(el => { el.setAttribute("aria-label", t(el.dataset.i18nLabel)); });
-    const toggle = document.querySelector("[data-lang-toggle]");
-    toggle.textContent = t("lang.other");
-    toggle.setAttribute("aria-label", t("lang.otherName"));
     if (version) {
       document.querySelector("[data-version-line]").textContent = t("cta.reqv").replace("{v}", version);
     }
@@ -793,11 +821,6 @@ footer .made { width: 100%; color: var(--ink-soft); font-size: .95rem; }
     render();
   }));
 
-  document.querySelector("[data-lang-toggle]").addEventListener("click", () => {
-    lang = lang === "es" ? "en" : "es";
-    store.set("tinto.lang", lang);
-    applyLang();
-  });
 
   // Reloj de la barra de menú
   const clock = document.querySelector("[data-clock]");
