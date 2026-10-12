@@ -11,6 +11,7 @@
 
 <p align="center">
   <a href="https://github.com/Maggi3Mae/tinto/releases/latest"><b>Download</b></a> ·
+  <a href="https://maggi3mae.github.io/tinto/">Website</a> ·
   <a href="README.es.md">Español</a>
 </p>
 
@@ -90,6 +91,10 @@ New releases are built automatically by GitHub Actions when a version tag is pus
 ```bash
 git tag v1.0.0 && git push origin v1.0.0
 ```
+
+## Support
+
+If Tinto is useful to you, you can [buy me a coffee ☕](https://ko-fi.com/margaritaa).
 
 ## License
 

@@ -1,0 +1,841 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tinto · Tu Mac despierto, incluso con la tapa cerrada</title>
+<meta name="description" content="App gratuita y de código abierto para la barra de menú de macOS. Mantiene tu Mac despierto, incluso con la tapa cerrada, y tu estado en Disponible.">
+<meta name="color-scheme" content="light dark">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="img/og.png">
+
+<meta property="og:type" content="website">
+<meta property="og:title" content="Tinto: tu Mac despierto, incluso con la tapa cerrada">
+<meta property="og:description" content="App gratuita para la barra de menú de macOS. Sin cuenta, sin App Store.">
+<meta property="og:image" content="https://maggi3mae.github.io/tinto/img/og.png">
+<meta property="og:url" content="https://maggi3mae.github.io/tinto/">
+<meta name="twitter:card" content="summary_large_image">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wdth,wght@12..96,75..100,400..800&display=swap" rel="stylesheet">
+
+<style>
+:root {
+  --paper: #E4D0AE;         /* papel kraft de bolsa de café */
+  --paper-2: #EEE2CB;
+  --ink: #2A1910;           /* tinta café oscuro */
+  --ink-soft: #5E4433;
+  --cereza: #8E2622;        /* cereza madura del cafeto */
+  --hoja: #3D6A36;          /* hoja del cafeto: Disponible */
+  --ambar: #B87A0C;         /* Ausente */
+  --band: #24160E;          /* franja tinto */
+  --band-ink: #F1E3CB;
+  --line: rgba(42, 25, 16, .2);
+  --menubar: rgba(248, 241, 229, .7);
+  --menu: rgba(250, 245, 236, .88);
+  --menu-ink: #1d1d1f;
+  --menu-soft: rgba(29, 29, 31, .42);
+  --menu-hi: #2b62d9;
+  --grain-opacity: .35;
+  --radius: 14px;
+  --font: "Bricolage Grotesque", ui-sans-serif, system-ui, sans-serif;
+  --system: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", "Inter", sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --paper: #1D130D;
+    --paper-2: #2A1C13;
+    --ink: #EEDFC6;
+    --ink-soft: #BDA78B;
+    --cereza: #E2786B;
+    --hoja: #84B977;
+    --ambar: #E3B04C;
+    --band: #120A06;
+    --band-ink: #EEDFC6;
+    --line: rgba(238, 223, 198, .16);
+    --menubar: rgba(42, 30, 22, .72);
+    --menu: rgba(46, 36, 29, .9);
+    --menu-ink: #f2ece4;
+    --menu-soft: rgba(242, 236, 228, .4);
+    --menu-hi: #3a73e6;
+    --grain-opacity: .18;
+  }
+}
+
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; scroll-padding-top: 56px; }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+body {
+  margin: 0;
+  background-color: var(--paper);
+  color: var(--ink);
+  font-family: var(--font);
+  font-size: 1.0625rem;
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+}
+/* textura de papel kraft */
+body::before {
+  content: "";
+  position: fixed; inset: 0;
+  pointer-events: none;
+  opacity: var(--grain-opacity);
+  mix-blend-mode: multiply;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .35 0 0 0 0 .22 0 0 0 0 .12 0 0 0 .55 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  z-index: 0;
+}
+@media (prefers-color-scheme: dark) { body::before { mix-blend-mode: screen; } }
+main, footer, .menubar { position: relative; z-index: 1; }
+
+a { color: inherit; text-decoration-thickness: 1px; text-underline-offset: 3px; }
+a:hover { color: var(--cereza); }
+:focus-visible { outline: 2px solid var(--cereza); outline-offset: 3px; border-radius: 4px; }
+
+.wrap { width: min(1120px, 100% - 32px); margin-inline: auto; }
+
+h1, h2, h3 { font-weight: 700; line-height: 1.05; margin: 0; letter-spacing: -0.02em; }
+h2 { font-size: clamp(2rem, 4.2vw, 3.25rem); font-variation-settings: "wdth" 85; }
+h3 { font-size: 1.2rem; letter-spacing: -0.01em; line-height: 1.2; }
+p { margin: 0; }
+.lede { font-size: 1.2rem; color: var(--ink-soft); max-width: 34em; }
+
+section { padding-block: clamp(72px, 10vw, 128px); }
+.section-head { display: grid; gap: 16px; margin-bottom: 48px; max-width: 40em; }
+
+/* ---------- Barra de menú (navegación) ---------- */
+.menubar {
+  position: sticky; top: 0; z-index: 10;
+  height: 36px;
+  background: var(--menubar);
+  -webkit-backdrop-filter: blur(20px) saturate(1.4);
+  backdrop-filter: blur(20px) saturate(1.4);
+  border-bottom: 1px solid var(--line);
+  font-family: var(--system);
+  font-size: 13.5px;
+}
+.menubar .wrap { display: flex; align-items: center; height: 100%; gap: 4px; }
+.menubar a, .menubar button {
+  font: inherit; color: var(--ink); background: none; border: 0;
+  padding: 3px 9px; border-radius: 5px; text-decoration: none; cursor: default; height: 26px;
+  display: inline-flex; align-items: center; gap: 6px;
+}
+.menubar a:hover, .menubar button:hover { background: var(--line); color: var(--ink); }
+.menubar .app { font-weight: 700; }
+.menubar .spacer { flex: 1; }
+.menubar .clock { padding: 0 6px 0 9px; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.menubar .lang { font-weight: 600; letter-spacing: .02em; }
+@media (max-width: 640px) {
+  .menubar .nav-link { display: none; }
+  .menubar .clock { display: none; }
+}
+
+/* grano: relleno = activo, contorno = inactivo */
+.bean .shell { fill: transparent; stroke: currentColor; transition: fill .25s ease; }
+.bean .crease { fill: none; stroke: currentColor; stroke-linecap: round; transition: stroke .25s ease; }
+.awake .bean .shell { fill: currentColor; }
+.awake .bean .crease { stroke: var(--crease-on, var(--paper)); }
+.menubar .bean { width: 18px; height: 18px; }
+.menubar .bean-btn { padding: 3px 7px; position: relative; }
+.menubar .bean-btn .crease { --crease-on: var(--paper-2); }
+
+.bean-btn .pulse {
+  position: absolute; inset: 2px; border-radius: 6px;
+  box-shadow: 0 0 0 0 var(--cereza);
+  pointer-events: none;
+}
+.bean-btn.hint .pulse { animation: pulse 1.4s ease-out 2; }
+@keyframes pulse {
+  0% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--cereza) 55%, transparent); }
+  100% { box-shadow: 0 0 0 12px transparent; }
+}
+@media (prefers-reduced-motion: reduce) { .bean-btn.hint .pulse { animation: none; } }
+
+/* ---------- Portada ---------- */
+.hero { padding-block: clamp(56px, 9vw, 112px) clamp(64px, 10vw, 120px); }
+.hero .wrap {
+  display: grid; gap: 40px 56px; align-items: center;
+  grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr);
+}
+.hero h1 {
+  font-size: clamp(3rem, 8.4vw, 6.6rem);
+  font-variation-settings: "wdth" 78;
+  line-height: .94;
+  letter-spacing: -0.035em;
+  max-width: 9.5em;
+}
+.hero .lede { margin-top: 28px; }
+.cta { margin-top: 36px; display: flex; flex-wrap: wrap; align-items: center; gap: 14px 22px; }
+.btn {
+  display: inline-flex; align-items: center; gap: 10px;
+  font: inherit; font-weight: 650; font-size: 1.05rem;
+  padding: 15px 24px; border-radius: 999px;
+  background: var(--ink); color: var(--paper-2);
+  text-decoration: none; border: 0; cursor: pointer;
+  transition: transform .15s ease, background .15s ease;
+}
+.btn:hover { color: var(--paper-2); background: var(--cereza); }
+.btn:active { transform: translateY(1px); }
+.btn svg { width: 18px; height: 18px; }
+.btn-ghost {
+  background: transparent; color: var(--ink);
+  box-shadow: inset 0 0 0 1.5px var(--ink);
+}
+.btn-ghost:hover { background: var(--ink); color: var(--paper-2); }
+.cta .meta { font-size: .95rem; color: var(--ink-soft); line-height: 1.4; }
+
+.hero-bean {
+  justify-self: center;
+  display: grid; justify-items: center; gap: 20px;
+  background: none; border: 0; padding: 0; color: var(--ink); cursor: pointer; font: inherit;
+}
+.hero-bean .bean { width: min(340px, 70vw); height: auto; overflow: visible; }
+.hero-bean .shell { stroke-width: .55; }
+.hero-bean .crease { stroke-width: .55; }
+.awake .hero-bean .crease { stroke-width: .8; }
+.hero-bean .bean { transition: transform .4s cubic-bezier(.3, 1.6, .5, 1); }
+.hero-bean:hover .bean { transform: rotate(-4deg) scale(1.02); }
+.awake .hero-bean .bean { transform: rotate(4deg); }
+.hero-bean .caption { font-size: 1rem; color: var(--ink-soft); min-height: 3em; text-align: center; max-width: 18em; }
+@media (prefers-reduced-motion: reduce) { .hero-bean .bean { transition: none; } }
+
+@media (max-width: 820px) {
+  .hero .wrap { grid-template-columns: 1fr; }
+  .hero-bean { order: -1; justify-self: start; grid-template-columns: auto 1fr; align-items: center; text-align: left; }
+  .hero-bean .bean { width: 96px; }
+  .hero-bean .caption { text-align: left; min-height: 0; }
+}
+
+/* ---------- Por qué ---------- */
+.story .wrap { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.3fr); gap: 40px 72px; align-items: start; border-top: 1.5px solid var(--ink); padding-top: 40px; }
+.story p { font-size: 1.3rem; line-height: 1.5; max-width: 30em; }
+.story p + p { margin-top: 20px; }
+.story .aside { font-size: 1.05rem; color: var(--ink-soft); }
+@media (max-width: 820px) { .story .wrap { grid-template-columns: 1fr; } }
+
+/* ---------- Funciones: el menú real ---------- */
+.features .wrap { display: grid; grid-template-columns: minmax(0, 340px) minmax(0, 1fr); gap: 48px 80px; align-items: start; }
+.features .section-head { grid-column: 1 / -1; margin-bottom: 8px; }
+.mac-menu {
+  position: sticky; top: 72px;
+  font-family: var(--system); font-size: 13.5px; color: var(--menu-ink);
+  background: var(--menu);
+  -webkit-backdrop-filter: blur(24px); backdrop-filter: blur(24px);
+  border-radius: 11px;
+  padding: 5px;
+  box-shadow: 0 0 0 .5px rgba(0,0,0,.25), 0 18px 50px -12px rgba(42,25,16,.45), 0 4px 12px rgba(42,25,16,.12);
+  list-style: none; margin: 0;
+}
+.mac-menu li {
+  display: grid; grid-template-columns: 18px 1fr auto; align-items: center;
+  height: 24px; padding: 0 10px 0 6px; border-radius: 5px;
+  transition: background .12s ease, color .12s ease;
+}
+.mac-menu li.sep { height: 11px; padding: 0 10px; display: block; }
+.mac-menu li.sep::after { content: ""; display: block; height: 1px; background: var(--menu-soft); opacity: .45; margin-top: 5px; }
+.mac-menu li.muted { color: var(--menu-soft); }
+.mac-menu .check { font-size: 12px; }
+.mac-menu .key { color: var(--menu-soft); }
+.mac-menu li.lit { background: var(--menu-hi); color: #fff; }
+.mac-menu li.lit .key { color: rgba(255,255,255,.8); }
+
+.feature-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; }
+.feature-list li {
+  display: grid; grid-template-columns: minmax(0, 13em) minmax(0, 1fr); gap: 4px 32px;
+  padding: 22px 16px; margin-inline: -16px; border-radius: var(--radius);
+  border-top: 1px solid var(--line);
+  transition: background .15s ease;
+  cursor: default;
+}
+.feature-list li:first-child { border-top: 0; }
+.feature-list li:hover, .feature-list li:focus-within, .feature-list li.lit { background: color-mix(in srgb, var(--paper-2) 70%, transparent); }
+.feature-list p { color: var(--ink-soft); max-width: 32em; }
+@media (max-width: 900px) {
+  .features .wrap { grid-template-columns: 1fr; }
+  .mac-menu { position: static; max-width: 340px; }
+  .feature-list li { grid-template-columns: 1fr; }
+}
+
+/* ---------- Trabajo remoto ---------- */
+.remote { background: var(--band); color: var(--band-ink); }
+.remote .wrap { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); gap: 48px 72px; align-items: center; }
+.remote .lede { color: color-mix(in srgb, var(--band-ink) 72%, transparent); margin-top: 20px; }
+.remote .btn { background: var(--band-ink); color: var(--band); margin-top: 32px; }
+.remote .btn:hover { background: var(--hoja); color: #fff; }
+.remote .bean { width: 20px; height: 20px; }
+.remote .btn .crease { --crease-on: var(--band-ink); }
+.remote.awake .btn .crease, .awake .remote .btn .crease { --crease-on: var(--band-ink); }
+
+.status-card {
+  font-family: var(--system);
+  background: color-mix(in srgb, var(--band-ink) 7%, transparent);
+  border: 1px solid color-mix(in srgb, var(--band-ink) 14%, transparent);
+  border-radius: 20px;
+  padding: 28px;
+  display: grid; gap: 22px;
+}
+.person { display: grid; grid-template-columns: auto 1fr; gap: 16px; align-items: center; }
+.avatar {
+  position: relative; width: 60px; height: 60px; border-radius: 50%;
+  background: #C79A6B; color: #2A1910;
+  display: grid; place-items: center; font-weight: 700; font-size: 20px; font-family: var(--font);
+}
+.avatar .dot {
+  position: absolute; right: -2px; bottom: -2px; width: 20px; height: 20px; border-radius: 50%;
+  background: var(--ambar); border: 3px solid var(--band);
+  transition: background .3s ease;
+}
+.awake .avatar .dot { background: var(--hoja); }
+.person .name { font-weight: 600; font-size: 17px; }
+.person .state { font-size: 15px; display: flex; align-items: center; gap: 8px; }
+.person .state::before { content: ""; width: 9px; height: 9px; border-radius: 50%; background: var(--ambar); transition: background .3s; }
+.awake .person .state::before { background: var(--hoja); }
+.status-card .note { font-size: 14px; line-height: 1.45; color: color-mix(in srgb, var(--band-ink) 65%, transparent); border-top: 1px solid color-mix(in srgb, var(--band-ink) 14%, transparent); padding-top: 18px; }
+@media (max-width: 820px) { .remote .wrap { grid-template-columns: 1fr; } }
+
+/* ---------- Instalación ---------- */
+.steps { list-style: none; margin: 0; padding: 0; counter-reset: step; display: grid; gap: 0; }
+.steps > li {
+  counter-increment: step;
+  display: grid; grid-template-columns: 72px minmax(0, 1fr); gap: 4px 24px;
+  padding-block: 32px; border-top: 1.5px solid var(--ink);
+}
+.steps > li > * { grid-column: 2; }
+.steps > li::before {
+  content: counter(step);
+  grid-column: 1; grid-row: 1 / span 6;
+  font-size: 3.4rem; line-height: .9; font-weight: 700; font-variation-settings: "wdth" 75;
+  color: var(--cereza);
+}
+.steps h3 { font-size: 1.45rem; }
+.steps p { color: var(--ink-soft); max-width: 36em; margin-top: 8px; }
+.steps strong { color: var(--ink); font-weight: 650; }
+.shot { margin-top: 24px; display: grid; grid-template-columns: minmax(0, 300px) minmax(0, 1fr); gap: 20px 32px; align-items: end; }
+.shot img { width: 100%; height: auto; border-radius: 18px; box-shadow: 0 20px 40px -18px rgba(42,25,16,.5); display: block; }
+.shot figcaption { font-size: .95rem; color: var(--ink-soft); max-width: 24em; }
+@media (max-width: 640px) { .shot { grid-template-columns: 1fr; } .steps > li { grid-template-columns: 44px minmax(0,1fr); } .steps > li::before { font-size: 2.4rem; } }
+
+details.terminal { margin-top: 20px; }
+details.terminal summary { cursor: pointer; color: var(--ink-soft); width: fit-content; }
+details.terminal pre {
+  margin: 12px 0 0; padding: 14px 18px; border-radius: 10px;
+  background: var(--ink); color: var(--paper-2);
+  font: 14px/1.5 ui-monospace, "SF Mono", Menlo, monospace; overflow-x: auto;
+}
+
+.thanks {
+  margin-top: 8px; padding-top: 32px; border-top: 1.5px solid var(--ink);
+  display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 16px 32px;
+}
+.thanks p { font-size: 1.3rem; font-weight: 600; letter-spacing: -0.01em; }
+
+/* ---------- Preguntas ---------- */
+.faq .wrap { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.6fr); gap: 32px 72px; align-items: start; }
+.faq .section-head { margin: 0; }
+.faq-list { border-top: 1.5px solid var(--ink); }
+.faq-list details { border-bottom: 1px solid var(--line); }
+.faq-list summary {
+  list-style: none; cursor: pointer;
+  display: flex; justify-content: space-between; gap: 24px; align-items: baseline;
+  padding: 20px 0; font-weight: 600; font-size: 1.15rem;
+}
+.faq-list summary::-webkit-details-marker { display: none; }
+.faq-list summary::after { content: "+"; font-weight: 400; font-size: 1.5rem; line-height: 1; color: var(--ink-soft); transition: transform .2s ease; }
+.faq-list details[open] summary::after { transform: rotate(45deg); }
+.faq-list details p { padding: 0 0 22px; color: var(--ink-soft); max-width: 38em; }
+@media (max-width: 820px) { .faq .wrap { grid-template-columns: 1fr; } }
+
+/* ---------- Pie ---------- */
+footer { padding-block: 56px 72px; border-top: 1px solid var(--line); }
+footer .wrap { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 24px 40px; }
+footer .brand { display: flex; align-items: center; gap: 12px; font-weight: 700; font-size: 1.3rem; }
+footer .brand .bean { width: 26px; height: 26px; }
+footer .brand .bean .shell { fill: currentColor; }
+footer .brand .bean .crease { stroke: var(--paper); }
+footer nav { display: flex; flex-wrap: wrap; gap: 8px 24px; font-size: .98rem; }
+footer .made { width: 100%; color: var(--ink-soft); font-size: .95rem; }
+
+.visually-hidden { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+</style>
+</head>
+<body>
+
+<header class="menubar">
+  <div class="wrap">
+    <a class="app" href="#top">Tinto</a>
+    <a class="nav-link" href="#funciones" data-i18n="nav.features">Funciones</a>
+    <a class="nav-link" href="#instalar" data-i18n="nav.install">Instalar</a>
+    <a class="nav-link" href="#preguntas" data-i18n="nav.faq">Preguntas</a>
+    <a class="nav-link" href="https://github.com/Maggi3Mae/tinto">GitHub</a>
+    <span class="spacer"></span>
+    <button class="bean-btn hint" type="button" data-toggle aria-pressed="false" data-i18n-label="bean.label" aria-label="Activar o desactivar Tinto">
+      <svg class="bean" viewBox="-9 -9 18 18" aria-hidden="true"><g stroke-width="1.3"><ellipse class="shell" rx="5" ry="7.5" transform="rotate(35)"/><path class="crease" d="M0.7 6.3 C -2.6 2.2, 2.6 -2.2, -0.7 -6.3" transform="rotate(35)"/></g></svg>
+      <span class="pulse"></span>
+    </button>
+    <button class="lang" type="button" data-lang-toggle aria-label="English">EN</button>
+    <span class="clock" data-clock></span>
+  </div>
+</header>
+
+<main id="top">
+
+  <section class="hero">
+    <div class="wrap">
+      <div>
+        <h1 data-i18n="hero.title">Tu Mac despierto, incluso con la tapa cerrada.</h1>
+        <p class="lede" data-i18n="hero.lede">Una app gratuita para la barra de menú de macOS. Un clic en el grano de café y tu Mac no se duerme: ni cuando lo dejas quieto ni cuando cierras la tapa.</p>
+        <div class="cta">
+          <a class="btn" href="https://github.com/Maggi3Mae/tinto/releases/latest" data-download>
+            <svg viewBox="0 0 20 20" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 3v10M5.5 8.5 10 13l4.5-4.5M4 17h12"/></svg>
+            <span data-i18n="cta.download">Descargar para Mac</span>
+          </a>
+          <p class="meta"><span data-i18n="cta.free">Gratis y sin cuenta.</span> <span data-version-line data-i18n="cta.req">Para macOS 14 o posterior, Apple Silicon e Intel.</span></p>
+        </div>
+      </div>
+      <button class="hero-bean" type="button" data-toggle aria-pressed="false">
+        <svg class="bean" viewBox="-9 -9 18 18" aria-hidden="true"><g><ellipse class="shell" rx="5" ry="7.5" transform="rotate(35)"/><path class="crease" d="M0.7 6.3 C -2.6 2.2, 2.6 -2.2, -0.7 -6.3" transform="rotate(35)"/></g></svg>
+        <span class="caption" data-state-text aria-live="polite">Haz clic en el grano para probarlo.</span>
+      </button>
+    </div>
+  </section>
+
+  <section class="story" aria-labelledby="story-title">
+    <div class="wrap">
+      <div class="section-head">
+        <h2 id="story-title" data-i18n="story.title">Por qué existe</h2>
+      </div>
+      <div>
+        <p data-i18n="story.p1">Trabajo con el portátil cerrado y una pantalla externa. No quería tenerlo conectado al cargador todo el día, la app que usaba me pedía una cuenta de la App Store y, cada vez que el cable de la pantalla fallaba, tenía que abrir el portátil, volver a activarla y acomodar todo de nuevo.</p>
+        <p data-i18n="story.p2">Así que hice la mía: pequeña, gratuita y de código abierto.</p>
+        <p class="aside" data-i18n="story.aside">En Colombia, un tinto es el café negro que te mantiene despierto. De ahí el nombre.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="features" id="funciones" aria-labelledby="features-title">
+    <div class="wrap">
+      <div class="section-head">
+        <h2 id="features-title" data-i18n="features.title">Todo cabe en un menú</h2>
+        <p class="lede" data-i18n="features.lede">Clic en el grano para activar o desactivar. Clic derecho para lo demás. Pasa por cada función para verla en el menú.</p>
+      </div>
+
+      <ul class="mac-menu" aria-hidden="true">
+        <li class="muted"><span></span><span data-state-menu>Tinto está inactivo</span><span></span></li>
+        <li class="sep"></li>
+        <li data-feature="click"><span></span><span data-i18n="m.indef">Activar indefinidamente</span><span></span></li>
+        <li data-feature="timers"><span></span><span data-i18n="m.for">Activar por</span><span class="key">›</span></li>
+        <li data-feature="timers"><span></span><span data-i18n="m.until">Activar hasta…</span><span></span></li>
+        <li class="sep"></li>
+        <li data-feature="lid"><span class="check">✓</span><span data-i18n="m.lid">Modo tapa cerrada</span><span></span></li>
+        <li><span class="check">✓</span><span data-i18n="m.display">Mantener la pantalla encendida</span><span></span></li>
+        <li data-feature="timers"><span class="check">✓</span><span data-i18n="m.time">Mostrar tiempo restante</span><span></span></li>
+        <li data-feature="activity"><span class="check">✓</span><span data-i18n="m.activity">Simular actividad</span><span></span></li>
+        <li data-feature="battery"><span></span><span data-i18n="m.battery">Seguro de batería</span><span class="key">›</span></li>
+        <li data-feature="login"><span class="check">✓</span><span data-i18n="m.login">Abrir al iniciar sesión</span><span></span></li>
+        <li class="sep"></li>
+        <li><span></span><span>Tinto <span data-version>1.2.0</span> · GitHub</span><span></span></li>
+        <li><span></span><span data-i18n="m.coffee">Invítame un café ☕</span><span></span></li>
+        <li data-feature="uninstall"><span></span><span data-i18n="m.uninstall">Desinstalar Tinto…</span><span></span></li>
+        <li><span></span><span data-i18n="m.quit">Salir de Tinto</span><span class="key">⌘Q</span></li>
+      </ul>
+
+      <ul class="feature-list">
+        <li data-feature="click" tabindex="0">
+          <h3 data-i18n="f.click.t">Un clic</h3>
+          <p data-i18n="f.click.p">El grano se llena cuando tu Mac está despierto y queda en contorno cuando no. Así sabes cómo está con solo mirar la barra de menú.</p>
+        </li>
+        <li data-feature="timers" tabindex="0">
+          <h3 data-i18n="f.timers.t">Temporizadores</h3>
+          <p data-i18n="f.timers.p">De 15 minutos a 8 horas, un tiempo a tu medida o hasta una hora concreta. El tiempo restante aparece junto al grano y, al terminar, todo vuelve a la normalidad.</p>
+        </li>
+        <li data-feature="lid" tabindex="0">
+          <h3 data-i18n="f.lid.t">Tapa cerrada</h3>
+          <p data-i18n="f.lid.p">Cierra el portátil y sigue trabajando en la pantalla externa, sin cargador, teclado ni mouse externos. Si el cable falla un momento, la sesión sigue igual.</p>
+        </li>
+        <li data-feature="activity" tabindex="0">
+          <h3 data-i18n="f.activity.t">Simular actividad</h3>
+          <p data-i18n="f.activity.p">Cuando no tocas el Mac, mueve el cursor un píxel y lo devuelve. Nunca mientras trabajas.</p>
+        </li>
+        <li data-feature="battery" tabindex="0">
+          <h3 data-i18n="f.battery.t">Seguro de batería</h3>
+          <p data-i18n="f.battery.p">Termina la sesión si la batería baja del nivel que elijas, para que tu Mac no se apague de golpe.</p>
+        </li>
+        <li data-feature="uninstall" tabindex="0">
+          <h3 data-i18n="f.uninstall.t">Fácil de quitar</h3>
+          <p data-i18n="f.uninstall.p">Desinstalar desde el mismo menú restaura el reposo normal, quita los permisos y manda la app a la Papelera.</p>
+        </li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="remote" aria-labelledby="remote-title">
+    <div class="wrap">
+      <div>
+        <h2 id="remote-title" data-i18n="remote.title">¿Trabajas remoto?</h2>
+        <p class="lede" data-i18n="remote.lede">Sal por un café sin preocuparte. Con Simular actividad, tu estado sigue en Disponible en Teams y Slack mientras no estás frente al computador.</p>
+        <button class="btn" type="button" data-toggle aria-pressed="false">
+          <svg class="bean" viewBox="-9 -9 18 18" aria-hidden="true"><g stroke-width="1.4"><ellipse class="shell" rx="5" ry="7.5" transform="rotate(35)"/><path class="crease" d="M0.7 6.3 C -2.6 2.2, 2.6 -2.2, -0.7 -6.3" transform="rotate(35)"/></g></svg>
+          <span data-toggle-label>Activar Tinto</span>
+        </button>
+      </div>
+      <div class="status-card" aria-live="polite">
+        <div class="person">
+          <div class="avatar" aria-hidden="true"><span data-i18n="remote.initial">T</span><span class="dot"></span></div>
+          <div>
+            <div class="name" data-i18n="remote.you">Tú</div>
+            <div class="state" data-status>Ausente</div>
+          </div>
+        </div>
+        <p class="note" data-status-note>Sin actividad hace 12 minutos.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="install" id="instalar" aria-labelledby="install-title">
+    <div class="wrap">
+      <div class="section-head">
+        <h2 id="install-title" data-i18n="install.title">Instálalo en un minuto</h2>
+      </div>
+      <ol class="steps">
+        <li>
+          <h3 data-i18n="s1.t">Descarga y abre el archivo</h3>
+          <p data-i18n-html="s1.p">Descarga <strong>Tinto.dmg</strong> y ábrelo con doble clic.</p>
+          <p><a href="https://github.com/Maggi3Mae/tinto/releases/latest" data-download data-i18n="s1.link">Descargar la última versión</a></p>
+        </li>
+        <li>
+          <h3 data-i18n="s2.t">Arrástralo a Aplicaciones</h3>
+          <p data-i18n="s2.p">Suelta el ícono de Tinto sobre la carpeta Aplicaciones de la ventana que se abre.</p>
+        </li>
+        <li>
+          <h3 data-i18n="s3.t">Ábrelo y autorízalo una vez</h3>
+          <p data-i18n-html="s3.p">La primera vez, macOS mostrará este aviso porque Tinto no está firmado con un certificado pago de Apple. Pulsa <strong>Listo</strong>, ve a <strong>Ajustes del Sistema → Privacidad y seguridad</strong>, baja hasta el final y pulsa <strong>Abrir de todas formas</strong>.</p>
+          <figure class="shot">
+            <img src="img/aviso-seguridad.png" width="608" height="568" loading="lazy" data-i18n-alt="s3.alt" alt="Aviso de macOS: No se abrió Tinto. Apple no pudo verificar que Tinto no contenga software malicioso. Botones: Mover al basurero y Listo.">
+            <figcaption data-i18n="s3.cap">Es normal en apps que no vienen de la App Store. Solo pasa la primera vez. Después verás el grano en tu barra de menú.</figcaption>
+          </figure>
+          <details class="terminal">
+            <summary data-i18n="s3.term">¿Prefieres la Terminal?</summary>
+            <pre><code>xattr -dr com.apple.quarantine /Applications/Tinto.app</code></pre>
+          </details>
+        </li>
+      </ol>
+      <div class="thanks">
+        <p data-i18n="thanks">¿Te sirvió? Invítame un café.</p>
+        <a class="btn btn-ghost" href="https://ko-fi.com/margaritaa" target="_blank" rel="noopener">
+          <span aria-hidden="true">☕</span> <span data-i18n="kofi">Invítame un café</span>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <section class="faq" id="preguntas" aria-labelledby="faq-title">
+    <div class="wrap">
+      <div class="section-head">
+        <h2 id="faq-title" data-i18n="faq.title">Preguntas frecuentes</h2>
+      </div>
+      <div class="faq-list">
+        <details>
+          <summary data-i18n="q1">¿Por qué pide mi contraseña?</summary>
+          <p data-i18n="a1">Solo para el modo tapa cerrada, y una sola vez. macOS no deja que el Mac siga despierto con la tapa cerrada si no está cargando. Tinto crea una regla que le permite activar y desactivar exactamente ese ajuste del sistema, y nada más.</p>
+        </details>
+        <details>
+          <summary data-i18n="q2">¿Es seguro?</summary>
+          <p data-i18n="a2">Tinto es de código abierto: cualquiera puede leer lo que hace en GitHub. No recopila datos ni se conecta a internet, y el reposo normal vuelve en cuanto terminas la sesión o cierras la app.</p>
+        </details>
+        <details>
+          <summary data-i18n="q3">¿Por qué no está en la App Store?</summary>
+          <p data-i18n="a3">Para que puedas instalarlo sin una cuenta de Apple. Por eso macOS muestra un aviso la primera vez que lo abres.</p>
+        </details>
+        <details>
+          <summary data-i18n="q4">¿Qué pasa si se desconecta la pantalla?</summary>
+          <p data-i18n="a4">Nada. La sesión no depende de la pantalla externa: si el cable falla un momento, tu Mac sigue despierto y todo sigue donde estaba.</p>
+        </details>
+        <details>
+          <summary data-i18n="q5">¿Funciona con Teams y Slack?</summary>
+          <p data-i18n="a5">Sí, con Simular actividad. macOS te pedirá permiso de Accesibilidad para mover el cursor. Como Tinto no está firmado con un certificado pago, ese permiso hay que volver a darlo después de cada actualización. Tinto te avisa.</p>
+        </details>
+        <details>
+          <summary data-i18n="q6">¿Se calienta dentro de la maleta?</summary>
+          <p data-i18n="a6">Puede pasar: con el modo tapa cerrada activo, el Mac no se duerme ni guardado. Desactiva Tinto antes de guardarlo. El seguro de batería ayuda si se te olvida.</p>
+        </details>
+        <details>
+          <summary data-i18n="q7">¿Cómo lo desinstalo?</summary>
+          <p data-i18n="a7">Clic derecho en el grano y luego Desinstalar Tinto. Restaura el reposo normal, quita los permisos y manda la app a la Papelera.</p>
+        </details>
+        <details>
+          <summary data-i18n="q8">¿Qué Mac necesito?</summary>
+          <p data-i18n="a8">Cualquier Mac con macOS 14 Sonoma o posterior, con chip Apple Silicon o Intel.</p>
+        </details>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <div class="wrap">
+    <div class="brand">
+      <svg class="bean" viewBox="-9 -9 18 18" aria-hidden="true"><g stroke-width="1.3"><ellipse class="shell" rx="5" ry="7.5" transform="rotate(35)"/><path class="crease" d="M0.7 6.3 C -2.6 2.2, 2.6 -2.2, -0.7 -6.3" transform="rotate(35)"/></g></svg>
+      Tinto
+    </div>
+    <nav aria-label="Enlaces">
+      <a href="https://github.com/Maggi3Mae/tinto" data-i18n="foot.code">Código en GitHub</a>
+      <a href="https://github.com/Maggi3Mae/tinto/issues" data-i18n="foot.issue">Reportar un problema</a>
+      <a href="https://ko-fi.com/margaritaa" target="_blank" rel="noopener" data-i18n="foot.kofi">Invítame un café ☕</a>
+    </nav>
+    <p class="made" data-i18n="foot.made">Hecho en Bogotá por Maggi3Mae. Código abierto con licencia MIT.</p>
+  </div>
+</footer>
+
+<script>
+(() => {
+  const REPO = "Maggi3Mae/tinto";
+
+  const strings = {
+    es: {
+      "title": "Tinto · Tu Mac despierto, incluso con la tapa cerrada",
+      "nav.features": "Funciones", "nav.install": "Instalar", "nav.faq": "Preguntas",
+      "bean.label": "Activar o desactivar Tinto",
+      "hero.title": "Tu Mac despierto, incluso con la tapa cerrada.",
+      "hero.lede": "Una app gratuita para la barra de menú de macOS. Un clic en el grano de café y tu Mac no se duerme: ni cuando lo dejas quieto ni cuando cierras la tapa.",
+      "hero.off": "Haz clic en el grano para probarlo.",
+      "hero.on": "Despierto. Tu Mac no se dormirá hasta que vuelvas a hacer clic.",
+      "cta.download": "Descargar para Mac",
+      "cta.free": "Gratis y sin cuenta.",
+      "cta.req": "Para macOS 14 o posterior, Apple Silicon e Intel.",
+      "cta.reqv": "Versión {v}, para macOS 14 o posterior, Apple Silicon e Intel.",
+      "story.title": "Por qué existe",
+      "story.p1": "Trabajo con el portátil cerrado y una pantalla externa. No quería tenerlo conectado al cargador todo el día, la app que usaba me pedía una cuenta de la App Store y, cada vez que el cable de la pantalla fallaba, tenía que abrir el portátil, volver a activarla y acomodar todo de nuevo.",
+      "story.p2": "Así que hice la mía: pequeña, gratuita y de código abierto.",
+      "story.aside": "En Colombia, un tinto es el café negro que te mantiene despierto. De ahí el nombre.",
+      "features.title": "Todo cabe en un menú",
+      "features.lede": "Clic en el grano para activar o desactivar. Clic derecho para lo demás. Pasa por cada función para verla en el menú.",
+      "m.off": "Tinto está inactivo", "m.on": "Activo · indefinidamente",
+      "m.indef": "Activar indefinidamente", "m.for": "Activar por", "m.until": "Activar hasta…",
+      "m.lid": "Modo tapa cerrada", "m.display": "Mantener la pantalla encendida",
+      "m.time": "Mostrar tiempo restante", "m.activity": "Simular actividad",
+      "m.battery": "Seguro de batería", "m.login": "Abrir al iniciar sesión",
+      "m.coffee": "Invítame un café ☕", "m.uninstall": "Desinstalar Tinto…", "m.quit": "Salir de Tinto",
+      "f.click.t": "Un clic",
+      "f.click.p": "El grano se llena cuando tu Mac está despierto y queda en contorno cuando no. Así sabes cómo está con solo mirar la barra de menú.",
+      "f.timers.t": "Temporizadores",
+      "f.timers.p": "De 15 minutos a 8 horas, un tiempo a tu medida o hasta una hora concreta. El tiempo restante aparece junto al grano y, al terminar, todo vuelve a la normalidad.",
+      "f.lid.t": "Tapa cerrada",
+      "f.lid.p": "Cierra el portátil y sigue trabajando en la pantalla externa, sin cargador, teclado ni mouse externos. Si el cable falla un momento, la sesión sigue igual.",
+      "f.activity.t": "Simular actividad",
+      "f.activity.p": "Cuando no tocas el Mac, mueve el cursor un píxel y lo devuelve. Nunca mientras trabajas.",
+      "f.battery.t": "Seguro de batería",
+      "f.battery.p": "Termina la sesión si la batería baja del nivel que elijas, para que tu Mac no se apague de golpe.",
+      "f.uninstall.t": "Fácil de quitar",
+      "f.uninstall.p": "Desinstalar desde el mismo menú restaura el reposo normal, quita los permisos y manda la app a la Papelera.",
+      "remote.title": "¿Trabajas remoto?",
+      "remote.lede": "Sal por un café sin preocuparte. Con Simular actividad, tu estado sigue en Disponible en Teams y Slack mientras no estás frente al computador.",
+      "remote.you": "Tú", "remote.initial": "T",
+      "remote.btnOff": "Activar Tinto", "remote.btnOn": "Desactivar Tinto",
+      "remote.away": "Ausente", "remote.avail": "Disponible",
+      "remote.noteOff": "Sin actividad hace 12 minutos.",
+      "remote.noteOn": "Sin actividad hace 12 minutos, pero Tinto mueve el cursor un píxel de vez en cuando.",
+      "install.title": "Instálalo en un minuto",
+      "s1.t": "Descarga y abre el archivo",
+      "s1.p": "Descarga <strong>Tinto.dmg</strong> y ábrelo con doble clic.",
+      "s1.link": "Descargar la última versión",
+      "s2.t": "Arrástralo a Aplicaciones",
+      "s2.p": "Suelta el ícono de Tinto sobre la carpeta Aplicaciones de la ventana que se abre.",
+      "s3.t": "Ábrelo y autorízalo una vez",
+      "s3.p": "La primera vez, macOS mostrará este aviso porque Tinto no está firmado con un certificado pago de Apple. Pulsa <strong>Listo</strong>, ve a <strong>Ajustes del Sistema → Privacidad y seguridad</strong>, baja hasta el final y pulsa <strong>Abrir de todas formas</strong>.",
+      "s3.alt": "Aviso de macOS: No se abrió Tinto. Apple no pudo verificar que Tinto no contenga software malicioso. Botones: Mover al basurero y Listo.",
+      "s3.cap": "Es normal en apps que no vienen de la App Store. Solo pasa la primera vez. Después verás el grano en tu barra de menú.",
+      "s3.term": "¿Prefieres la Terminal?",
+      "thanks": "¿Te sirvió? Invítame un café.",
+      "kofi": "Invítame un café",
+      "faq.title": "Preguntas frecuentes",
+      "q1": "¿Por qué pide mi contraseña?",
+      "a1": "Solo para el modo tapa cerrada, y una sola vez. macOS no deja que el Mac siga despierto con la tapa cerrada si no está cargando. Tinto crea una regla que le permite activar y desactivar exactamente ese ajuste del sistema, y nada más.",
+      "q2": "¿Es seguro?",
+      "a2": "Tinto es de código abierto: cualquiera puede leer lo que hace en GitHub. No recopila datos ni se conecta a internet, y el reposo normal vuelve en cuanto terminas la sesión o cierras la app.",
+      "q3": "¿Por qué no está en la App Store?",
+      "a3": "Para que puedas instalarlo sin una cuenta de Apple. Por eso macOS muestra un aviso la primera vez que lo abres.",
+      "q4": "¿Qué pasa si se desconecta la pantalla?",
+      "a4": "Nada. La sesión no depende de la pantalla externa: si el cable falla un momento, tu Mac sigue despierto y todo sigue donde estaba.",
+      "q5": "¿Funciona con Teams y Slack?",
+      "a5": "Sí, con Simular actividad. macOS te pedirá permiso de Accesibilidad para mover el cursor. Como Tinto no está firmado con un certificado pago, ese permiso hay que volver a darlo después de cada actualización. Tinto te avisa.",
+      "q6": "¿Se calienta dentro de la maleta?",
+      "a6": "Puede pasar: con el modo tapa cerrada activo, el Mac no se duerme ni guardado. Desactiva Tinto antes de guardarlo. El seguro de batería ayuda si se te olvida.",
+      "q7": "¿Cómo lo desinstalo?",
+      "a7": "Clic derecho en el grano y luego Desinstalar Tinto. Restaura el reposo normal, quita los permisos y manda la app a la Papelera.",
+      "q8": "¿Qué Mac necesito?",
+      "a8": "Cualquier Mac con macOS 14 Sonoma o posterior, con chip Apple Silicon o Intel.",
+      "foot.code": "Código en GitHub", "foot.issue": "Reportar un problema", "foot.kofi": "Invítame un café ☕",
+      "foot.made": "Hecho en Bogotá por Maggi3Mae. Código abierto con licencia MIT.",
+      "lang.other": "EN", "lang.otherName": "English"
+    },
+    en: {
+      "title": "Tinto · Keep your Mac awake, even with the lid closed",
+      "nav.features": "Features", "nav.install": "Install", "nav.faq": "FAQ",
+      "bean.label": "Turn Tinto on or off",
+      "hero.title": "Keep your Mac awake, even with the lid closed.",
+      "hero.lede": "A free menu bar app for macOS. One click on the coffee bean and your Mac won't sleep: not when you leave it idle, not when you close the lid.",
+      "hero.off": "Click the bean to try it.",
+      "hero.on": "Awake. Your Mac won't sleep until you click again.",
+      "cta.download": "Download for Mac",
+      "cta.free": "Free, no account needed.",
+      "cta.req": "For macOS 14 or later, Apple Silicon and Intel.",
+      "cta.reqv": "Version {v}, for macOS 14 or later, Apple Silicon and Intel.",
+      "story.title": "Why it exists",
+      "story.p1": "I work with my laptop closed and an external display. I didn't want it plugged in all day, the app I used needed an App Store account, and every time the display cable glitched I had to open the laptop, turn the app back on and rearrange everything.",
+      "story.p2": "So I made my own: small, free and open source.",
+      "story.aside": "In Colombia, a tinto is the small black coffee that keeps you going. Hence the name.",
+      "features.title": "It all fits in one menu",
+      "features.lede": "Click the bean to turn it on or off. Right-click for everything else. Hover each feature to find it in the menu.",
+      "m.off": "Tinto is off", "m.on": "Active · indefinitely",
+      "m.indef": "Activate indefinitely", "m.for": "Activate for", "m.until": "Activate until…",
+      "m.lid": "Closed-lid mode", "m.display": "Keep display on",
+      "m.time": "Show time remaining", "m.activity": "Simulate activity",
+      "m.battery": "Battery safeguard", "m.login": "Open at login",
+      "m.coffee": "Buy me a coffee ☕", "m.uninstall": "Uninstall Tinto…", "m.quit": "Quit Tinto",
+      "f.click.t": "One click",
+      "f.click.p": "The bean is filled while your Mac is awake and outlined when it isn't, so a glance at the menu bar tells you where things stand.",
+      "f.timers.t": "Timers",
+      "f.timers.p": "From 15 minutes to 8 hours, a custom duration, or until a set time. Time remaining shows next to the bean, and when it runs out everything goes back to normal.",
+      "f.lid.t": "Lid closed",
+      "f.lid.p": "Close your laptop and keep working on an external display, no charger, keyboard or mouse required. If the cable glitches for a moment, your session carries on.",
+      "f.activity.t": "Simulate activity",
+      "f.activity.p": "While you're away, it nudges the cursor one pixel and back. Never while you're working.",
+      "f.battery.t": "Battery safeguard",
+      "f.battery.p": "Ends the session when the battery drops below the level you choose, so your Mac doesn't shut down abruptly.",
+      "f.uninstall.t": "Easy to remove",
+      "f.uninstall.p": "Uninstalling from the same menu restores normal sleep, removes its permissions and moves the app to the Trash.",
+      "remote.title": "Working remotely?",
+      "remote.lede": "Step out for a coffee without worrying. With Simulate activity, Teams and Slack keep showing you as Available while you're away from your desk.",
+      "remote.you": "You", "remote.initial": "Y",
+      "remote.btnOff": "Turn on Tinto", "remote.btnOn": "Turn off Tinto",
+      "remote.away": "Away", "remote.avail": "Available",
+      "remote.noteOff": "Idle for 12 minutes.",
+      "remote.noteOn": "Idle for 12 minutes, but Tinto nudges the cursor a pixel every now and then.",
+      "install.title": "Install it in a minute",
+      "s1.t": "Download and open the file",
+      "s1.p": "Download <strong>Tinto.dmg</strong> and double-click it.",
+      "s1.link": "Download the latest version",
+      "s2.t": "Drag it to Applications",
+      "s2.p": "Drop the Tinto icon onto the Applications folder in the window that opens.",
+      "s3.t": "Open it and allow it once",
+      "s3.p": "The first time, macOS shows this warning because Tinto isn't signed with a paid Apple Developer certificate. Click <strong>Done</strong>, go to <strong>System Settings → Privacy &amp; Security</strong>, scroll down and click <strong>Open Anyway</strong>.",
+      "s3.alt": "macOS warning: Tinto Not Opened. Apple could not verify Tinto is free of malware. Buttons: Move to Trash and Done. Shown in Spanish.",
+      "s3.cap": "This is normal for apps that don't come from the App Store, and it only happens once. Then you'll see the bean in your menu bar.",
+      "s3.term": "Prefer the Terminal?",
+      "thanks": "Find it useful? Buy me a coffee.",
+      "kofi": "Buy me a coffee",
+      "faq.title": "Questions",
+      "q1": "Why does it ask for my password?",
+      "a1": "Only for closed-lid mode, and only once. macOS won't let a Mac stay awake with the lid closed unless it's charging. Tinto creates a rule that lets it turn exactly that system setting on and off, and nothing else.",
+      "q2": "Is it safe?",
+      "a2": "Tinto is open source: anyone can read what it does on GitHub. It collects no data and doesn't connect to the internet, and normal sleep returns as soon as you end the session or quit the app.",
+      "q3": "Why isn't it on the App Store?",
+      "a3": "So you can install it without an Apple account. That's why macOS shows a warning the first time you open it.",
+      "q4": "What if the display disconnects?",
+      "a4": "Nothing. Your session doesn't depend on the external display: if the cable glitches for a moment, your Mac stays awake and everything stays where it was.",
+      "q5": "Does it work with Teams and Slack?",
+      "a5": "Yes, with Simulate activity. macOS will ask for Accessibility permission so Tinto can move the cursor. Because Tinto isn't signed with a paid certificate, you'll need to grant it again after each update. Tinto reminds you.",
+      "q6": "Will it overheat in my bag?",
+      "a6": "It can: with closed-lid mode on, your Mac won't sleep even when packed away. Turn Tinto off before packing it. The battery safeguard helps if you forget.",
+      "q7": "How do I uninstall it?",
+      "a7": "Right-click the bean, then Uninstall Tinto. It restores normal sleep, removes its permissions and moves the app to the Trash.",
+      "q8": "Which Mac do I need?",
+      "a8": "Any Mac running macOS 14 Sonoma or later, with Apple Silicon or Intel.",
+      "foot.code": "Code on GitHub", "foot.issue": "Report a problem", "foot.kofi": "Buy me a coffee ☕",
+      "foot.made": "Made in Bogotá by Maggi3Mae. Open source under the MIT License.",
+      "lang.other": "ES", "lang.otherName": "Español"
+    }
+  };
+
+  const store = {
+    get(k) { try { return localStorage.getItem(k); } catch { return null; } },
+    set(k, v) { try { localStorage.setItem(k, v); } catch {} }
+  };
+
+  let lang = store.get("tinto.lang") ||
+    ((navigator.language || "es").toLowerCase().startsWith("es") ? "es" : "en");
+  let awake = false;
+  let version = null;
+
+  const $$ = (s) => document.querySelectorAll(s);
+  const t = (k) => strings[lang][k] ?? strings.es[k] ?? "";
+
+  function applyLang() {
+    document.documentElement.lang = lang;
+    document.title = t("title");
+    $$("[data-i18n]").forEach(el => { el.textContent = t(el.dataset.i18n); });
+    $$("[data-i18n-html]").forEach(el => { el.innerHTML = t(el.dataset.i18nHtml); });
+    $$("[data-i18n-alt]").forEach(el => { el.alt = t(el.dataset.i18nAlt); });
+    $$("[data-i18n-label]").forEach(el => { el.setAttribute("aria-label", t(el.dataset.i18nLabel)); });
+    const toggle = document.querySelector("[data-lang-toggle]");
+    toggle.textContent = t("lang.other");
+    toggle.setAttribute("aria-label", t("lang.otherName"));
+    if (version) {
+      document.querySelector("[data-version-line]").textContent = t("cta.reqv").replace("{v}", version);
+    }
+    render();
+  }
+
+  function render() {
+    document.documentElement.classList.toggle("awake", awake);
+    $$("[data-toggle]").forEach(b => b.setAttribute("aria-pressed", String(awake)));
+    $$("[data-state-text]").forEach(el => el.textContent = t(awake ? "hero.on" : "hero.off"));
+    $$("[data-state-menu]").forEach(el => el.textContent = t(awake ? "m.on" : "m.off"));
+    $$("[data-toggle-label]").forEach(el => el.textContent = t(awake ? "remote.btnOn" : "remote.btnOff"));
+    $$("[data-status]").forEach(el => el.textContent = t(awake ? "remote.avail" : "remote.away"));
+    $$("[data-status-note]").forEach(el => el.textContent = t(awake ? "remote.noteOn" : "remote.noteOff"));
+  }
+
+  $$("[data-toggle]").forEach(b => b.addEventListener("click", () => {
+    awake = !awake;
+    document.querySelector(".menubar .bean-btn").classList.remove("hint");
+    render();
+  }));
+
+  document.querySelector("[data-lang-toggle]").addEventListener("click", () => {
+    lang = lang === "es" ? "en" : "es";
+    store.set("tinto.lang", lang);
+    applyLang();
+  });
+
+  // Reloj de la barra de menú
+  const clock = document.querySelector("[data-clock]");
+  function tick() {
+    const now = new Date();
+    clock.textContent = now.toLocaleString(lang === "es" ? "es-CO" : "en-US",
+      { weekday: "short", hour: "numeric", minute: "2-digit" });
+  }
+  tick();
+  setInterval(tick, 15000);
+
+  // Resaltar en el menú la función que se está mirando
+  const menuItems = $$(".mac-menu [data-feature]");
+  function light(feature) {
+    menuItems.forEach(li => li.classList.toggle("lit", li.dataset.feature === feature));
+  }
+  $$(".feature-list [data-feature]").forEach(li => {
+    const f = li.dataset.feature;
+    li.addEventListener("mouseenter", () => light(f));
+    li.addEventListener("focus", () => light(f));
+    li.addEventListener("mouseleave", () => light(null));
+    li.addEventListener("blur", () => light(null));
+  });
+
+  // Última versión y descarga directa del .dmg
+  fetch(`https://api.github.com/repos/${REPO}/releases/latest`)
+    .then(r => r.ok ? r.json() : Promise.reject())
+    .then(rel => {
+      version = (rel.tag_name || "").replace(/^v/, "");
+      const dmg = (rel.assets || []).find(a => a.name.endsWith(".dmg"));
+      if (dmg) $$("[data-download]").forEach(a => a.href = dmg.browser_download_url);
+      if (version) $$("[data-version]").forEach(el => el.textContent = version);
+      applyLang();
+    })
+    .catch(() => {});
+
+  applyLang();
+})();
+</script>
+</body>
+</html>

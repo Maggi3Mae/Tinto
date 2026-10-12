@@ -11,6 +11,7 @@
 
 <p align="center">
   <a href="https://github.com/Maggi3Mae/tinto/releases/latest"><b>Descargar</b></a> ·
+  <a href="https://maggi3mae.github.io/tinto/">Página</a> ·
   <a href="README.md">English</a>
 </p>
 
@@ -36,7 +37,7 @@ Requiere **macOS 14 Sonoma o posterior** · Apple Silicon e Intel.
 1. Descarga el último **Tinto-x.y.z.dmg** desde [Releases](https://github.com/Maggi3Mae/tinto/releases/latest).
 2. Ábrelo y arrastra **Tinto** a **Aplicaciones**.
 3. Abre Tinto. La primera vez macOS lo bloqueará porque no está firmado con un certificado pago de Apple:
-   haz clic en **Aceptar**, ve a **Ajustes del Sistema → Privacidad y seguridad**, baja hasta el final y pulsa **Abrir de todas formas**.
+   haz clic en **Listo**, ve a **Ajustes del Sistema → Privacidad y seguridad**, baja hasta el final y pulsa **Abrir de todas formas**.
 
    <details>
    <summary>¿Prefieres la Terminal?</summary>
@@ -90,6 +91,10 @@ Las nuevas versiones se publican solas con GitHub Actions al subir una etiqueta 
 ```bash
 git tag v1.0.0 && git push origin v1.0.0
 ```
+
+## Apoyar el proyecto
+
+Si Tinto te sirve, puedes [invitarme un café ☕](https://ko-fi.com/margaritaa).
 
 ## Licencia
 

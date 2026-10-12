@@ -17,6 +17,7 @@ enum L {
 
 enum Info {
     static let repoURL = URL(string: "https://github.com/Maggi3Mae/tinto")!
+    static let kofiURL = URL(string: "https://ko-fi.com/margaritaa")!
     static let sudoersPath = "/etc/sudoers.d/tinto"
     static var version: String {
         Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "dev"
@@ -498,6 +499,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         menu.addItem(.separator())
 
         menu.addItem(item("Tinto \(Info.version) · GitHub", #selector(openRepo)))
+        menu.addItem(item(L.t("Invítame un café ☕", "Buy me a coffee ☕"), #selector(openKofi)))
         menu.addItem(item(L.t("Desinstalar Tinto…", "Uninstall Tinto…"), #selector(uninstall)))
 
         let quit = NSMenuItem(title: L.t("Salir de Tinto", "Quit Tinto"),
@@ -627,6 +629,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     @objc private func openRepo() {
         NSWorkspace.shared.open(Info.repoURL)
+    }
+
+    @objc private func openKofi() {
+        NSWorkspace.shared.open(Info.kofiURL)
     }
 
     @objc private func uninstall() {
