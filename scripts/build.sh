@@ -21,7 +21,7 @@ if ! xcrun --find swiftc >/dev/null 2>&1; then
     exit 1
 fi
 
-echo "☕ Building $APP_NAME $VERSION…"
+echo "☕ Building $APP_NAME ${VERSION}…"
 rm -rf "$BUILD"
 mkdir -p "$APP/Contents/MacOS" "$APP/Contents/Resources"
 
