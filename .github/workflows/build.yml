@@ -20,6 +20,9 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Build DMG
+        env:
+          LANG: en_US.UTF-8
+          LC_ALL: en_US.UTF-8
         run: |
           if [[ "$GITHUB_REF" == refs/tags/v* ]]; then
             export VERSION="${GITHUB_REF_NAME#v}"
@@ -37,6 +40,12 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh release create "$GITHUB_REF_NAME" dist/*.dmg \
-            --title "Tinto $GITHUB_REF_NAME" \
-            --notes-file .github/release-notes.md
+          # If the release was created by hand on GitHub, just attach the .dmg to it.
+          # Otherwise (tag pushed from the Terminal), create it with the install notes.
+          if gh release view "$GITHUB_REF_NAME" >/dev/null 2>&1; then
+            gh release upload "$GITHUB_REF_NAME" dist/*.dmg --clobber
+          else
+            gh release create "$GITHUB_REF_NAME" dist/*.dmg \
+              --title "Tinto $GITHUB_REF_NAME" \
+              --notes-file .github/release-notes.md
+          fi
